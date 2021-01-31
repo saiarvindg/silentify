@@ -1,13 +1,7 @@
-extern crate dotenv;
-
-use dotenv::dotenv;
-use std::env;
+extern crate rspotify;
 
 fn main() {
-    println!("Loading env vars from .env file...");
-    dotenv().ok();
+    println!("Starting silentify...");
 
-    for (key, value) in env::vars() {
-        println!("{}: {}", key, value);
-    }
+
 }
