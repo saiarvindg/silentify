@@ -1,31 +1,37 @@
+use rspotify::{client::Spotify, model::{playing::Playing, user::PrivateUser}, oauth2::{SpotifyClientCredentials, SpotifyOAuth}};
+use rspotify::util::get_token;
+
 extern crate rspotify;
 
-use rspotify::blocking::oauth2::SpotifyClientCredentials;
-use rspotify::{blocking::client::Spotify, model::playing::Playing};
 
-pub fn build_spotify_instance() -> Spotify {
+pub async fn build_spotify_instance() -> Spotify {
     println!("Creating spotify instance...");
-    let client_credential = SpotifyClientCredentials::default().build();
-    let access_token = client_credential.get_access_token();
 
-    let spotify = Spotify::default()
-        .client_credentials_manager(client_credential)
-        .access_token(&access_token)
-        .build();
+    let mut oauth = SpotifyOAuth::default()
+    .scope("user-read-currently-playing")
+    .build();
 
-    // check that everything is setup properly by getting the current user
-    match spotify.me() {
-        Ok(me) => println!("Me: {:?}", me),
-        Err(err) => panic!("Could not fetch current user. Spotify may not be setup properly: {}", err)
-    }
+    let token_info = match get_token(&mut oauth).await {
+        Some(token_info) => token_info,
+        None => panic!("could get token from spotify")
+    };
 
-    return spotify;
+    let client_credentials = SpotifyClientCredentials::default().token_info(token_info).build();
+
+    return Spotify::default().client_credentials_manager(client_credentials).build();
 }
 
-pub fn get_curr_playing_track(spotify: Spotify) -> Option<Playing> {
-    // let birdy_uri = "spotify:artist:2WX2uTcsvV5OnS0inACecP";
+pub async fn get_current_user(spotify: &Spotify) -> PrivateUser {
+    match spotify.me().await {
+        Ok(me) => me,
+        Err(err) => panic!("Could not fetch current user. Spotify may not be setup properly: {}", err)
+    }
+}
+
+
+pub async fn get_curr_playing_track(spotify: &Spotify) -> Option<Playing> {
     println!("Fetching currently playing track...");
-    let get_curr_track = spotify.current_user_playing_track();
+    let get_curr_track = spotify.current_user_playing_track().await;
     let curr_track = match get_curr_track {
         Ok(track) => track,
         Err(err) => panic!("Could not fetch currently playing track: {}", err),
@@ -34,6 +40,7 @@ pub fn get_curr_playing_track(spotify: Spotify) -> Option<Playing> {
     println!("Current track: {:?}", curr_track);
     return curr_track;
 }
+
 
 // pub fn calc_track_end_time(total_duration: u32, curr_progress: u32) {
     
