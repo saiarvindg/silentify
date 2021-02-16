@@ -4,6 +4,7 @@ use rspotify::util::get_token;
 extern crate rspotify;
 
 
+
 pub async fn build_spotify_instance() -> Spotify {
     println!("Creating spotify instance...");
 
@@ -21,11 +22,23 @@ pub async fn build_spotify_instance() -> Spotify {
     return Spotify::default().client_credentials_manager(client_credentials).build();
 }
 
-pub async fn get_current_user(spotify: &Spotify) -> PrivateUser {
-    match spotify.me().await {
+pub async fn get_current_displayname(spotify: &Spotify) -> (String, String) {
+    println!("Fetching currently logged in user...")
+    let user = match spotify.me().await {
         Ok(me) => me,
         Err(err) => panic!("Could not fetch current user. Spotify may not be setup properly: {}", err)
-    }
+    };
+    let displayname = match user.display_name {
+        Some(name) => name,
+        None => String::from("No display name set")
+    };
+
+    let email = match user.email {
+        Some(email) => email,
+        None => String::from("No email address set")
+    };
+
+    return (displayname, email);
 }
 
 
