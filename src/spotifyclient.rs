@@ -23,35 +23,17 @@ pub async fn build_spotify_instance() -> Spotify {
 }
 
 pub async fn get_current_displayname(spotify: &Spotify) -> (String, String) {
-    println!("Fetching currently logged in user...")
-    let user = match spotify.me().await {
-        Ok(me) => me,
-        Err(err) => panic!("Could not fetch current user. Spotify may not be setup properly: {}", err)
-    };
-    let displayname = match user.display_name {
-        Some(name) => name,
-        None => String::from("No display name set")
-    };
-
-    let email = match user.email {
-        Some(email) => email,
-        None => String::from("No email address set")
-    };
-
+    println!("Fetching currently logged in user...");
+    let user = spotify.me().await.expect("Could not fetch current user. Spotify may not be setup properly");
+    let displayname = user.display_name.unwrap_or(String::from("No display name set"));
+    let email = user.email.unwrap_or(String::from("No email address set"));
     return (displayname, email);
 }
 
 
 pub async fn get_curr_playing_track(spotify: &Spotify) -> Option<Playing> {
     println!("Fetching currently playing track...");
-    let get_curr_track = spotify.current_user_playing_track().await;
-    let curr_track = match get_curr_track {
-        Ok(track) => track,
-        Err(err) => panic!("Could not fetch currently playing track: {}", err),
-    };
-
-    println!("Current track: {:?}", curr_track);
-    return curr_track;
+    return spotify.current_user_playing_track().await.expect("Could not fetch currently playing track.");
 }
 
 
