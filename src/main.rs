@@ -1,12 +1,13 @@
+mod spotifyclient;
+mod volume_control;
+
 use rspotify::model::track::FullTrack;
 use tokio::time::{delay_for, Duration};
-
-mod spotifyclient;
 
 const AD_LENGTH: Duration = Duration::from_secs(30); // default ad length
 
 // placeholder to account for random delays like crossfade, network lag, processing, etc. util i figure out a better way
-const HACKY_DELAY: Duration = Duration::from_secs(2);
+pub const HACKY_DELAY: Duration = Duration::from_secs(3);
 
 #[tokio::main]
 async fn main() {
@@ -20,6 +21,7 @@ async fn main() {
 
         if curr_track.is_some() {
             let playing = curr_track.unwrap();
+
             match playing.item {
                 Some(full_track) => {
                     let curr_progress = match playing.progress_ms {
@@ -36,24 +38,25 @@ async fn main() {
                         "Checking again in {} seconds",
                         Duration::as_secs(&remaining_duration)
                     );
-                    delay_for(remaining_duration).await;
-                    println!(
-                        "Waited for {} seconds",
-                        Duration::as_secs(&remaining_duration)
-                    );
+                    wait_for(remaining_duration).await;
                 }
-                // in rspotify library None means the item is not a track, album, playist, episode, etc... so it must an ad
+                // in rspotify library None means the item is not a track, album, playist, episode, etc... so it must be an ad if something is playing
                 None => {
-                    println!("An AD is playing. Muting for {} seconds.", AD_LENGTH.as_secs());
-                    delay_for(AD_LENGTH).await;
-                    println!("Waited for {} seconds", AD_LENGTH.as_secs());
+                    println!("An AD is playing.");
+                    volume_control::mute_vol(&AD_LENGTH);
+                    wait_for(AD_LENGTH).await;
                 }
             }
         } else {
-            println!("Nothing is currently playing. Exiting...");
+            println!("Nothing is currently playing. Check that Spotify is playing something. Exiting...");
             break;
         }
     }
+}
+
+async fn wait_for(duration: Duration) {
+    delay_for(duration).await;
+    println!("Waited for {} seconds", duration.as_secs());
 }
 
 fn print_curr_playing(full_track: &FullTrack, progress_ms: Duration) {

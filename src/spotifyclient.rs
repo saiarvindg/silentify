@@ -1,9 +1,13 @@
-use rspotify::util::get_token;
+
+
+use rspotify::{util::get_token};
 use rspotify::{
     client::Spotify,
     model::{artist::SimplifiedArtist, playing::Playing},
     oauth2::{SpotifyClientCredentials, SpotifyOAuth},
 };
+
+
 
 extern crate rspotify;
 
