@@ -2,7 +2,7 @@ $def = @"
 // based off of following sources:
 // https://stackoverflow.com/questions/24196166/how-to-mute-an-application-with-powershell
 // https://github.com/Xeroday/Spotify-Ad-Blocker
-// only tested via the powershell script
+// only tested via the powershell script. eventually want to replace with a pure rust implementation (possibly using winapi-rs)
 using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
@@ -76,7 +76,6 @@ namespace Silentify
                 children.Add(p.Id);
                 if (p.MainWindowTitle.Length > 1)
                 {
-                    Console.WriteLine("Found main spotify process - pid: " + p.Id + ", name: " + p.ProcessName);
                     spotifyProcess = p;
                 }
             }
@@ -129,7 +128,6 @@ namespace Silentify
                 spotifyProcs.Add(p.Id);
                 if (p.MainWindowTitle.Length > 1)
                 {
-                    Console.WriteLine("Found main spotify process - pid: " + p.Id + ", name: " + p.ProcessName);
                     spotifyProcess = p;
                     break; // stop searching - we've found the main process
                 }
@@ -320,3 +318,30 @@ namespace Silentify
 
 
 Add-Type -TypeDefinition $def -Language CSharpVersion3
+# Invoke-Expression "[Silentify.AppMuter]::EnumerateApplications('spotify')"
+
+function Get-App-Volume {
+    param (
+        [string]$appName
+    )
+    Invoke-Expression "[Silentify.AppMuter]::GetApplicationVolume('$appName')"
+}
+
+function Set-App-Volume {
+    param (
+        [string]$appName,
+        [float]$volume
+    )
+    Invoke-Expression "[Silentify.AppMuter]::SetApplicationVolume('$appName', $volume)"
+}
+
+function Set-App-Mute {
+    param (
+        [string]$appName,
+        [switch]$unmute
+    )
+    switch ($unmute) {
+        $true { Invoke-Expression "[Silentify.AppMuter]::SetApplicationMute('$appName', 0)" ; break }
+        Default { Invoke-Expression "[Silentify.AppMuter]::SetApplicationMute('$appName', 1)" ; break }
+    }
+}

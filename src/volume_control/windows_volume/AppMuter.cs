@@ -75,7 +75,6 @@ namespace Silentify
                 children.Add(p.Id);
                 if (p.MainWindowTitle.Length > 1)
                 {
-                    Console.WriteLine("Found main spotify process - pid: " + p.Id + ", name: " + p.ProcessName);
                     spotifyProcess = p;
                 }
             }
@@ -128,7 +127,6 @@ namespace Silentify
                 spotifyProcs.Add(p.Id);
                 if (p.MainWindowTitle.Length > 1)
                 {
-                    Console.WriteLine("Found main spotify process - pid: " + p.Id + ", name: " + p.ProcessName);
                     spotifyProcess = p;
                     break; // stop searching - we've found the main process
                 }

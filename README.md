@@ -25,11 +25,14 @@ Rewrite of [SilentSpotifyAdsScript](https://github.com/saiarvindg/SilentSpotifyA
 
 ## Notes
 
-- [1] Windows support requires PowerShell with C# (version 3.5)
+- [1] Windows support requires PowerShell and C# (version 3.5)
 - [2] Mac support requires AppleScript
 - [3] Stored in application memory. So if you kill the process during an AD (when the volume is muted), the "saved" volume will be zero
 
 ## TODO/Improvements
 
 - Remove RSpotify dependency
--
+- Remove powershell_script rust dependency
+- Store volume state somewhere on disk so application restarts will not wipe out volume state
+- Have something else play over the ADs are running
+    - Ex: user's saved tracks on disk, some tracks from another application
