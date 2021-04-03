@@ -19,9 +19,15 @@ fn get_vol() -> i8 {
 }
 
 #[cfg(target_os = "macos")]
-fn set_vol(level: i8) {
-    mac_volume::set_vol(level);
+fn mute_vol() {
+    mac_volume::mute_vol();
 }
+
+#[cfg(target_os = "macos")]
+fn unmute_vol() {
+    mac_volume::unmute_vol();
+}
+
 
 #[cfg(target_os = "windows")]
 fn get_vol() -> i8 {
@@ -29,9 +35,24 @@ fn get_vol() -> i8 {
 }
 
 #[cfg(target_os = "windows")]
-fn set_vol(level: i8) {
-    windows_volume::set_vol(level);
+fn mute_vol() {
+    windows_volume::mute_vol();
 }
+
+#[cfg(target_os = "windows")]
+fn unmute_vol() {
+    windows_volume::unmute_vol();
+}
+
+// TODO: revisit setting the volume
+// #[cfg(target_os = "macos")]
+// fn set_vol(level: i8) {
+//     mac_volume::set_vol(level);
+// }
+// #[cfg(target_os = "windows")]
+// fn set_vol(level: i8) {
+//     windows_volume::set_vol(level);
+// }
 
 fn save_curr_vol() {
 
@@ -42,11 +63,10 @@ pub fn setup_vol() {
 
 }
 
-pub fn mute_vol(duration: &Duration) {
-    println!("Muting for {} seconds", Duration::as_secs(duration));
-    
+pub fn mute_volume() {
+    mute_vol();
 }
 
 pub fn restore_vol() {
-
+    unmute_vol();
 }

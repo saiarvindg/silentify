@@ -6,9 +6,6 @@ use tokio::time::{delay_for, Duration};
 
 const AD_LENGTH: Duration = Duration::from_secs(30); // default ad length
 
-// placeholder to account for random delays like crossfade, network lag, processing, etc. util i figure out a better way
-pub const HACKY_DELAY: Duration = Duration::from_secs(3);
-
 #[tokio::main]
 async fn main() {
     println!("Starting Silentify...");
@@ -24,26 +21,31 @@ async fn main() {
 
             match playing.item {
                 Some(full_track) => {
+                    // something is playing - restore the volume now
+                    println!("Some track is playing. Restoring volume...");
+                    volume_control::restore_vol();
+
                     let curr_progress = match playing.progress_ms {
                         Some(p) => Duration::from_millis(p.into()),
-                        None => HACKY_DELAY, // going to assume that if progress result is empty but track info exists, nothing has started playing yet but will play
+                        None => Duration::from_millis(0), // going to assume that if progress result is empty but track info exists, nothing has started playing yet but will play
                     };
 
                     print_curr_playing(&full_track, curr_progress);
 
+                    // one thing to consider is network lag, processing when calculating the progress of the song
                     let remaining_duration =
-                        Duration::from_millis(full_track.duration_ms.into()) - curr_progress + HACKY_DELAY;
+                        Duration::from_millis(full_track.duration_ms.into()) - curr_progress;
 
                     println!(
-                        "Checking again in {} seconds",
+                        "Checking again in {} seconds...",
                         Duration::as_secs(&remaining_duration)
                     );
                     wait_for(remaining_duration).await;
                 }
                 // in rspotify library None means the item is not a track, album, playist, episode, etc... so it must be an ad if something is playing
                 None => {
-                    println!("An AD is playing.");
-                    volume_control::mute_vol(&AD_LENGTH);
+                    println!("An AD is playing. Muting for {} seconds...", Duration::as_secs(&AD_LENGTH));
+                    volume_control::mute_volume();
                     wait_for(AD_LENGTH).await;
                 }
             }
